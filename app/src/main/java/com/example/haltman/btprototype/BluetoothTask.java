@@ -164,9 +164,6 @@ public class BluetoothTask {
                 btOut.write(params[0].getBytes());
                 btOut.flush();
 
-                byte[] buff = new byte[512];
-                //int len = btIn.read(buff); // TODO:ループして読み込み
-
                 return new String("Connection.");
             } catch (Throwable t) {
                 doClose();
@@ -193,10 +190,10 @@ public class BluetoothTask {
                 btOut.write('g');
                 btOut.flush();
 
-                byte[] buff = new byte[512];
-                int len = btIn.read(buff); // TODO:ループして読み込み
+                //[] buff = new byte[512];
+                //int len = btIn.read(buff); // TODO:ループして読み込み
 
-                return new String(buff,0,len);
+                return new String("connected.");
             } catch (Throwable t) {
                 doClose();
                 return t.toString();
@@ -207,7 +204,24 @@ public class BluetoothTask {
         protected void onPostExecute(String result) {
             if (result != null) {
                 // 結果を画面に反映。
-                activity.doSetResultText(result.toString());
+                String res="";
+                try {
+                    while(true) {
+                        byte[] buf = new byte[512];
+                        int len = btIn.read(buf);
+                        String r = new String(buf,0,len);
+                        res += r;
+                        if(r.contains("|"))
+                        {
+                            break;
+                        }
+                    }
+                    Log.d(TAG,res);
+                }catch(Exception e)
+                {
+
+                }
+                activity.doSetResultText(res.substring(0,res.length()-1));
             }
         }
     }
