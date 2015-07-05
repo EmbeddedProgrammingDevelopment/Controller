@@ -18,18 +18,39 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+/**
+ *  Bluetoothの通信用クラス（A.I担当分）
+ *  引用元Webサイト : http://www.kotemaru.org/2013/10/30/android-bluetooth-sample.html
+ */
 public class BluetoothTask {
+    //Logcat用のタグ
     private static final String TAG = "BluetoothTask";
 
+    //BluetoothのSPP通信に使用するUUID。
     private static final UUID APP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
+    //メインアクティビティへの参照。
     private MainActivity activity;
+
+    //Bluetooth通信のアダプタ
     private BluetoothAdapter bluetoothAdapter;
+
+    //通信するBluetoothデバイスを扱うオブジェクト
     private BluetoothDevice bluetoothDevice = null;
+
+    //Bluetooth通信用のソケット
     private BluetoothSocket bluetoothSocket;
+
+    //SPP通信の文字列受信用ストリーム
     private InputStream btIn;
+
+    //SPP通信の文字列送信用ストリーム
     private OutputStream btOut;
 
+    /**
+     * コンストラクタ
+     * @param activity メインアクティビティのインスタンス
+     */
     public BluetoothTask(MainActivity activity) {
         this.activity = activity;
     }
@@ -38,13 +59,16 @@ public class BluetoothTask {
      * Bluetoothの初期化。
      */
     public void init() {
-        // BTアダプタ取得。取れなければBT未実装デバイス。
+        // Bluetoothアダプタを取得する。
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        //取得に失敗した時は、AndroidがBluetoothを取得していないためエラーメッセージを出力して終了。
         if (bluetoothAdapter == null) {
             activity.errorDialog("This device is not implement Bluetooth.");
             return;
         }
-        // BTが設定で有効になっているかチェック。
+
+        // Bluetoothがむこうの時はユーザに有効化の許可を求めた上で、有効化する。
         if (!bluetoothAdapter.isEnabled()) {
             // TODO: ユーザに許可を求める処理。
             activity.errorDialog("This device is disabled Bluetooth.");
@@ -59,8 +83,7 @@ public class BluetoothTask {
     }
 
     /**
-     * 非同期で指定されたデバイスの接続を開始する。
-     * - 選択ダイアログから選択されたデバイスを設定される。
+     * 指定されたデバイスとの接続を非同期で開始する。
      * @param device 選択デバイス
      */
     public void doConnect(BluetoothDevice device) {
@@ -76,19 +99,23 @@ public class BluetoothTask {
 
     /**
      * 非同期でBluetoothの接続を閉じる。
+     * （CloseTaskを実行する。）
      */
     public void doClose() {
         new CloseTask().execute();
     }
 
     /**
-     * 非同期でメッセージの送受信を行う。
-     * @param msg 送信メッセージ.
+     * 非同期でメッセージの送信を行う。（主にキャタピラ制御用）
+     * @param msg 送信メッセージ。
      */
     public void doSend(String msg) {
         new SendTask().execute(msg);
     }
 
+    /**
+     * 非同期で、温度取得を行う。
+     */
     public void doReceive(){ new ReceiveTask().execute();}
 
     /**
@@ -153,9 +180,8 @@ public class BluetoothTask {
     }
 
     /**
-     * サーバとメッセージの送受信を行う非同期タスク。
-     * - 英小文字の文字列を送ると英大文字で戻ってくる。
-     * - 戻ってきた文字列を下段のTextViewに反映する。
+     * メッセージを送信する非同期タスククラス。
+     * （主にキャタピラ制御に用いられる。）
      */
     private class SendTask extends AsyncTask<String, Void, Object> {
         @Override
@@ -183,15 +209,16 @@ public class BluetoothTask {
         }
     }
 
+    /**
+     * メッセージを送信して、向こうからの応答メッセージを取得する非同期タスククラス。
+     * （主に温度取得に用いられる。）
+     */
     private class ReceiveTask extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
             try {
                 btOut.write('g');
                 btOut.flush();
-
-                //[] buff = new byte[512];
-                //int len = btIn.read(buff); // TODO:ループして読み込み
 
                 return new String("connected.");
             } catch (Throwable t) {
