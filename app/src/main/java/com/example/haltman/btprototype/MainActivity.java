@@ -85,6 +85,11 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------
     // 以下、ダイアログ関連
 
+    /**
+     * ダイアログを作成しなければいけないタイミングで呼び出される関数。
+     * @param id 作成するダイアログのID
+     * @return 作成されたダイアログのインスタンス
+     */
     @SuppressWarnings("deprecation")
     @Override
     protected Dialog onCreateDialog(int id) {
@@ -93,6 +98,11 @@ public class MainActivity extends Activity implements OnClickListener {
         return null;
     }
 
+    /**
+     * ダイアログ表示前に必要な処理を記述する。
+     * @param id 準備するダイアログID
+     * @param dialog 準備するダイアログのインスタンス
+     */
     @SuppressWarnings("deprecation")
     @Override
     protected void onPrepareDialog(int id, Dialog dialog) {
@@ -149,6 +159,8 @@ public class MainActivity extends Activity implements OnClickListener {
     public void errorDialog(String msg) {
         if (this.isFinishing()) return;
         this.errorMessage = msg;
+
+        //エラーダイアログを表示する。
         this.showDialog(ERROR_DIALOG);
     }
 
