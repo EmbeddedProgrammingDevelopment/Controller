@@ -120,8 +120,8 @@ public class BluetoothTask {
 
     /**
      * Bluetoothと接続を開始する非同期タスク。
-     * - 時間がかかる場合があるのでProcessDialogを表示する。
-     * - 双方向のストリームを開くところまで。
+     * 時間がかかる場合があるので通信確立中であることを表示する。
+     * 入出力双方向のストリームを開くところまで。
      */
     private class ConnectTask extends AsyncTask<Void, Void, Object> {
         @Override
